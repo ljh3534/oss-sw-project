@@ -29,3 +29,4 @@ AdPrice의 중요한 기술·설계 결정을 기록한다. "왜 이렇게 만�
 | [0002](0002-coefficients-in-json.md) | 계산 계수를 JSON 설정 파일로 분리한다 | Accepted | 2026-11-13 |
 | [0003](0003-step-rounding-in-breakdown.md) | 단가 계산 시 단계별로 반올림한다 | Accepted | 2026-11-13 |
 | [0004](0004-github-pages-deploy.md) | GitHub Actions + GitHub Pages로 배포한다 | Accepted | 2026-11-13 |
+| [0005](0005-ci-optimization.md) | CI를 Reusable Workflow·Composite Action·변경 감지로 최적화한다 | Accepted | 2026-11-13 |

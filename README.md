@@ -47,6 +47,7 @@ npm test        # 단위 테스트
 | [SECURITY.md](SECURITY.md) | 보안 취약점 신고 |
 | [docs/REVIEW_GUIDE.md](docs/REVIEW_GUIDE.md) | 코드 리뷰 가이드 ([MUST]/[SHOULD] 태그) |
 | [docs/adr/](docs/adr/) | 기술 결정 기록(ADR) |
+| [docs/ci/optimization-report.md](docs/ci/optimization-report.md) | CI 최적화 전후 비교 리포트 |
 | [docs/oss/license-comparison.md](docs/oss/license-comparison.md) | 오픈소스 라이선스 비교 및 선택 기준 |
 | [docs/oss/inner-source-roadmap.md](docs/oss/inner-source-roadmap.md) | Inner Source 도입 로드맵 |
 | [docs/SETUP.md](docs/SETUP.md) | 개발 환경 설정 기록 |
