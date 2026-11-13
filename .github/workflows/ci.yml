@@ -71,15 +71,15 @@ jobs:
           FULL: ${{ github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && inputs.full-matrix) }}
         run: |
           if [ "$FULL" = "true" ]; then
-            # main: 3 OS × 3 Node = 9  + include 확장(Node 26 실험)  - exclude(macOS × Node 20, EOL)
-            MATRIX='{"os":["ubuntu-latest","windows-latest","macos-latest"],"node":[20,22,24],
-                     "exclude":[{"os":"macos-latest","node":20}],
-                     "include":[{"os":"ubuntu-latest","node":26,"experimental":true}]}'
+            # main: 3 OS × Node 22/24/26 = 9  - exclude(macOS × 22)  + include(Node current 실험)
+            MATRIX='{"os":["ubuntu-latest","windows-latest","macos-latest"],"node":[22,24,26],
+                     "exclude":[{"os":"macos-latest","node":22}],
+                     "include":[{"os":"ubuntu-latest","node":"current","experimental":true}]}'
           else
-            # PR: ubuntu × 20/22/24 + windows/macOS × 22 = 5 (OS 차이는 잡되 비용은 절반)
-            MATRIX='{"include":[{"os":"ubuntu-latest","node":20},{"os":"ubuntu-latest","node":22},
-                     {"os":"ubuntu-latest","node":24},{"os":"windows-latest","node":22},
-                     {"os":"macos-latest","node":22}]}'
+            # PR: ubuntu × 22/24/26 + windows/macOS × 24(LTS) = 5 (OS 차이는 잡되 비용은 절반)
+            MATRIX='{"include":[{"os":"ubuntu-latest","node":22},{"os":"ubuntu-latest","node":24},
+                     {"os":"ubuntu-latest","node":26},{"os":"windows-latest","node":24},
+                     {"os":"macos-latest","node":24}]}'
           fi
           echo "matrix=$(echo "$MATRIX" | jq -c .)" >> "$GITHUB_OUTPUT"
           echo "### Test matrix ($([ "$FULL" = "true" ] && echo full || echo reduced))" >> "$GITHUB_STEP_SUMMARY"

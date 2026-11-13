@@ -8,7 +8,7 @@ AdPrice에 관심을 가져 주셔서 감사합니다! 이 문서는 이슈 등�
 ```bash
 git clone https://github.com/ljh3534/oss-sw-project.git
 cd oss-sw-project
-npm ci          # 의존성 설치 (Node.js 20 이상)
+npm ci          # 의존성 설치 (Node.js 22.12 이상)
 npm run lint    # ESLint
 npm test        # Vitest 단위 테스트
 npm run dev     # 로컬 개발 서버

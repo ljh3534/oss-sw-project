@@ -11,6 +11,12 @@ updates:
     groups:
       dev-dependencies:
         dependency-type: development
+        # 메이저 업데이트는 호환성 검토가 필요하므로 그룹에서 빼고 개별 PR로 받는다
+        update-types: [minor, patch]
+    ignore:
+      # typescript-eslint가 TypeScript <6.1만 지원 — 지원되면 해제
+      - dependency-name: typescript
+        update-types: ["version-update:semver-major"]
     commit-message:
       prefix: build
       include: scope
