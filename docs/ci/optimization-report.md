@@ -12,7 +12,7 @@
 | 러너 사용 시간 합계 | **672초** | **238초** | **−65%** |
 | 잡당 평균 의존성 설치 시간 | **45.9초** | **8.2초** | **−82%** |
 | PR 1건당 러너 시간 (축소 매트릭스) | 672초 | **164초** | **−76%** |
-| 문서만 바꾼 PR | 전체 파이프라인 실행 | build/test/deploy **skip** | (§5) |
+| 문서만 바꾼 PR (wall-clock) | 211초 (#14) | **15초** (#29, build/test/deploy skip) | **−93%** |
 
 ## 2. 무엇을 바꿨나
 
@@ -73,7 +73,7 @@
 | 시나리오 | changes.code | ci | deploy | 결과 |
 |---|---|---|---|---|
 | 코드 변경 PR (#16) | true | 실행 (PR 매트릭스 5개) | skip (PR) | ✅ |
-| 문서만 변경 PR | false | **skip** | skip | ✅ `ci-result` 통과 — 제출 정리 PR에서 확인 후 기록 |
+| 문서만 변경 PR (#29) | false | **skip** | skip | ✅ [전체 15초, 러너 약 12초](https://github.com/ljh3534/oss-sw-project/actions/runs/43438862588) — 최적화 전 문서 PR(#14) 211초 대비 **−93%** |
 | main push + 코드 변경 | true | 실행 (9+1개) | **실행** | ✅ |
 | main push + 문서만 변경 | false | skip | **skip** | 재배포 없음 |
 
