@@ -8,7 +8,7 @@ AdPrice에 관심을 가져 주셔서 감사합니다! 이 문서는 이슈 등�
 ```bash
 git clone https://github.com/ljh3534/oss-sw-project.git
 cd oss-sw-project
-npm ci          # 의존성 설치 (Node.js 20 이상)
+npm ci          # 의존성 설치 (Node.js 20 이상, package.json은 #6에서 추가)
 npm run lint    # ESLint
 npm test        # Vitest 단위 테스트
 npm run dev     # 로컬 개발 서버
@@ -84,6 +84,7 @@ docs(adr): ADR-0002 계수 JSON 분리 결정 기록
 4. CI(Lint · Test · Build)가 모두 통과해야 합니다.
 5. CODEOWNERS에 지정된 리뷰어가 [리뷰 가이드](docs/REVIEW_GUIDE.md)에 따라 리뷰합니다.
 6. 모든 `[MUST]` 코멘트가 해결되면 Squash merge 합니다.
+   - 저장소 설정에서 **Squash merge만 허용**하고, **병합 후 브랜치 자동 삭제**가 켜져 있습니다.
 
 PR은 작게 유지하세요 — 변경 라인 400줄 이하를 권장합니다.
 
