@@ -1,0 +1,74 @@
+# 5주차: 비동기 협업 — SLA 추적
+# 리뷰 가이드의 SLA(첫 응답 24h, PR 리뷰 48h)를 넘긴 이슈/PR에 라벨과 알림 댓글을 단다.
+name: SLA Tracker
+
+on:
+  schedule:
+    - cron: "0 */6 * * *" # 6시간마다 (UTC)
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "라벨/댓글 없이 결과만 출력"
+        type: boolean
+        default: false
+
+permissions:
+  issues: write
+  pull-requests: write
+
+env:
+  ISSUE_FIRST_RESPONSE_HOURS: 24
+  PR_REVIEW_HOURS: 48
+
+jobs:
+  check-sla:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/github-script@v7
+        with:
+          script: |
+            const { owner, repo } = context.repo;
+            const dryRun = context.payload.inputs?.dry_run === "true" || context.payload.inputs?.dry_run === true;
+            const now = Date.now();
+            const hours = (iso) => (now - new Date(iso).getTime()) / 36e5;
+            const BOT = "github-actions[bot]";
+            const maintainers = new Set([owner]);
+            const breached = [];
+
+            const items = await github.paginate(github.rest.issues.listForRepo, { owner, repo, state: "open", per_page: 100 });
+            for (const item of items) {
+              if (item.labels.some((l) => l.name === "sla-breached")) continue;
+              const isPR = Boolean(item.pull_request);
+              const limit = isPR ? Number(process.env.PR_REVIEW_HOURS) : Number(process.env.ISSUE_FIRST_RESPONSE_HOURS);
+              const age = hours(item.created_at);
+              if (age < limit) continue;
+
+              // 사람(메인테이너)의 응답이 있었는지 확인 — 봇 자동 응답은 제외
+              const comments = await github.paginate(github.rest.issues.listComments, { owner, repo, issue_number: item.number });
+              // 메인테이너가 직접 만든 이슈(작업 추적용)는 첫 응답 SLA 대상이 아니다
+              if (!isPR && maintainers.has(item.user.login)) continue;
+              let responded = comments.some((c) => c.user.login !== BOT && c.user.login !== item.user.login);
+              if (isPR && !responded) {
+                const reviews = await github.paginate(github.rest.pulls.listReviews, { owner, repo, pull_number: item.number });
+                responded = reviews.length > 0;
+              }
+              if (responded) continue;
+
+              breached.push({ number: item.number, title: item.title, isPR, age: Math.floor(age) });
+              if (dryRun) continue;
+              await github.rest.issues.addLabels({ owner, repo, issue_number: item.number, labels: ["sla-breached"] });
+              await github.rest.issues.createComment({
+                owner, repo, issue_number: item.number,
+                body: `⏰ SLA 알림: 생성 후 **${Math.floor(age)}시간** 동안 ${isPR ? "리뷰" : "응답"}가 없습니다 (기준 ${limit}h). @${owner} 확인 부탁드립니다.`,
+              });
+            }
+
+            await core.summary
+              .addHeading("SLA 점검 결과")
+              .addRaw(`점검 시각: ${new Date().toISOString()} / dry-run: ${dryRun}\n\n`)
+              .addTable([
+                [{ data: "#", header: true }, { data: "유형", header: true }, { data: "제목", header: true }, { data: "경과(h)", header: true }],
+                ...breached.map((b) => [`#${b.number}`, b.isPR ? "PR" : "Issue", b.title, String(b.age)]),
+              ])
+              .write();
+            core.info(`SLA 위반 ${breached.length}건`);

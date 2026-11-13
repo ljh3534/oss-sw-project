@@ -48,7 +48,7 @@
 | 의사결정 기록 | `docs/adr/` | 계수·아키텍처 변경 시 필수 |
 | 비동기 토론 | GitHub Discussions (RFC) | 회의 대신 RFC로 합의 |
 | 품질 게이트 | GitHub Actions CI + 브랜치 보호 | 동일 |
-| SLA | `sla-tracker.yml` | 리뷰 첫 응답 24h, 완료 48h |
+| SLA | [`sla-tracker.yml`](../../.github/workflows/sla-tracker.yml) | 리뷰 첫 응답 24h, 완료 48h |
 
 ## 6. 측정 지표 (KPI)
 

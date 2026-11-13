@@ -1,0 +1,38 @@
+title: "[RFC] "
+labels: ["rfc"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        설계 제안(RFC)입니다. 합의되면 `docs/adr/`에 ADR로 기록합니다.
+  - type: textarea
+    id: background
+    attributes:
+      label: 배경
+      description: 어떤 문제 때문에 제안하나요?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: 제안
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: 검토한 대안
+  - type: textarea
+    id: impact
+    attributes:
+      label: 영향 범위
+      description: 계산 결과, 계수 파일, UI, CI 등
+  - type: textarea
+    id: questions
+    attributes:
+      label: 미해결 질문
+  - type: input
+    id: deadline
+    attributes:
+      label: 토론 기한
+      placeholder: "YYYY-MM-DD (기본 7일)"
