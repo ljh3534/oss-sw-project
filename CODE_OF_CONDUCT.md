@@ -37,7 +37,9 @@
 
 ## 신고 방법
 
-부적절한 행동은 메인테이너([@ljh3534](https://github.com/ljh3534))에게 GitHub 비공개 채널 또는 저장소의 Security 탭(Private vulnerability reporting)을 통해 신고할 수 있습니다.
+부적절한 행동은 메인테이너([@ljh3534](https://github.com/ljh3534))에게 GitHub 프로필에 공개된 연락처로 **비공개** 신고해 주세요.
+공개적으로 다뤄도 되는 사안(예: 이슈·PR 댓글의 표현 문제)은 `conduct` 라벨을 붙인 이슈로 알려 주셔도 됩니다.
+보안 취약점은 행동 강령이 아니라 [SECURITY.md](SECURITY.md)의 절차를 따릅니다.
 모든 신고는 신속하고 공정하게 검토되며, 신고자의 개인 정보와 안전은 보호됩니다.
 
 ## 집행 가이드라인

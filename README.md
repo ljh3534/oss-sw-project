@@ -28,7 +28,7 @@ AdPrice는 **계산 공식과 계수를 공개(JSON 설정 파일)** 하여 누�
 ```bash
 git clone https://github.com/ljh3534/oss-sw-project.git
 cd oss-sw-project
-npm ci
+npm ci          # package.json은 #6(계산 모듈) 병합 후 사용 가능
 npm run dev     # http://localhost:5173
 npm test        # 단위 테스트
 ```
