@@ -1,8 +1,8 @@
-# 7주차: GitHub Actions 기본 CI/CD
-#  lint ─┐
-#        ├─> build (아티팩트 업로드, Secret으로 서명)
-#        │      └─> test (Matrix: OS 3 × Node 3, 아티팩트 다운로드 후 서명 검증)
-#        │              └─> deploy (main push 때만, GitHub Pages)
+# 8주차: 최적화된 CI/CD (RFC #15 → ADR-0005)
+#
+#  changes ─┬─> (코드 변경 시) ci  ── reusable-node-ci.yml (Composite Action + 캐시)
+#  plan  ───┘                    └─> deploy (main push + 코드 변경 시에만)
+#  ci-result: 모든 결과를 집계하는 단일 required check
 name: CI
 
 on:
@@ -11,105 +11,100 @@ on:
   pull_request:
     branches: [main]
   workflow_dispatch:
+    inputs:
+      cache:
+        description: "의존성 캐시 사용 (끄면 최적화 전 측정용)"
+        type: boolean
+        default: true
+      full-matrix:
+        description: "전체 매트릭스 실행"
+        type: boolean
+        default: true
 
-# 최소 권한 원칙: 기본은 읽기 전용, deploy 잡에서만 필요한 권한을 추가
 permissions:
   contents: read
 
 concurrency:
   group: ci-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
-  lint:
-    name: Lint & Typecheck
+  changes:
+    name: Detect changes
     runs-on: ubuntu-latest
+    permissions:
+      pull-requests: read
+    outputs:
+      code: ${{ steps.filter.outputs.code }}
+      docs: ${{ steps.filter.outputs.docs }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v5
+      - uses: dorny/paths-filter@v3
+        id: filter
         with:
-          node-version-file: .nvmrc
-      - run: npm ci
-      - run: npm run lint
-      - run: npm run typecheck
+          filters: |
+            code:
+              - 'src/**'
+              - 'tests/**'
+              - 'scripts/**'
+              - 'index.html'
+              - 'package.json'
+              - 'package-lock.json'
+              - '*.config.*'
+              - 'tsconfig.json'
+              - '.nvmrc'
+              - '.github/workflows/ci.yml'
+              - '.github/workflows/reusable-node-ci.yml'
+              - '.github/actions/**'
+            docs:
+              - '**/*.md'
+              - 'docs/**'
 
-  build:
-    name: Build
-    needs: lint
+  plan:
+    name: Plan test matrix
     runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.m.outputs.matrix }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version-file: .nvmrc
-      - run: npm ci
-      - name: Build
-        run: npm run build
+      - id: m
         env:
-          VITE_BUILD_SHA: ${{ github.sha }}
-      - name: Sign build (Secret 주입)
-        run: node scripts/sign-build.mjs sign dist
-        env:
-          # Secret은 env로만 주입한다. run 스크립트에 ${{ secrets.* }}를 직접 쓰지 않는다.
-          BUILD_SIGNING_KEY: ${{ secrets.BUILD_SIGNING_KEY }}
-      - uses: actions/upload-artifact@v4
-        with:
-          name: dist
-          path: dist/
-          retention-days: 7
+          FULL: ${{ github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && inputs.full-matrix) }}
+        run: |
+          if [ "$FULL" = "true" ]; then
+            # main: 3 OS × 3 Node = 9  + include 확장(Node 26 실험)  - exclude(macOS × Node 20, EOL)
+            MATRIX='{"os":["ubuntu-latest","windows-latest","macos-latest"],"node":[20,22,24],
+                     "exclude":[{"os":"macos-latest","node":20}],
+                     "include":[{"os":"ubuntu-latest","node":26,"experimental":true}]}'
+          else
+            # PR: ubuntu × 20/22/24 + windows/macOS × 22 = 5 (OS 차이는 잡되 비용은 절반)
+            MATRIX='{"include":[{"os":"ubuntu-latest","node":20},{"os":"ubuntu-latest","node":22},
+                     {"os":"ubuntu-latest","node":24},{"os":"windows-latest","node":22},
+                     {"os":"macos-latest","node":22}]}'
+          fi
+          echo "matrix=$(echo "$MATRIX" | jq -c .)" >> "$GITHUB_OUTPUT"
+          echo "### Test matrix ($([ "$FULL" = "true" ] && echo full || echo reduced))" >> "$GITHUB_STEP_SUMMARY"
+          echo '```json' >> "$GITHUB_STEP_SUMMARY"; echo "$MATRIX" | jq . >> "$GITHUB_STEP_SUMMARY"; echo '```' >> "$GITHUB_STEP_SUMMARY"
 
-  test:
-    name: Test (${{ matrix.os }}, Node ${{ matrix.node }})
-    needs: build
-    runs-on: ${{ matrix.os }}
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
-        node: [20, 22, 24]
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: ${{ matrix.node }}
-      - run: npm ci
-      - name: Unit tests
-        run: npm test
-      - uses: actions/download-artifact@v4
-        with:
-          name: dist
-          path: dist/
-      - name: Verify build artifact signature
-        run: node scripts/sign-build.mjs verify dist
-        env:
-          BUILD_SIGNING_KEY: ${{ secrets.BUILD_SIGNING_KEY }}
-
-  coverage:
-    name: Coverage report
-    needs: build
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version-file: .nvmrc
-      - run: npm ci
-      - run: npm run test:coverage
-      - uses: actions/upload-artifact@v4
-        with:
-          name: coverage
-          path: coverage/
-          retention-days: 7
+  ci:
+    name: Node CI
+    needs: [changes, plan]
+    if: needs.changes.outputs.code == 'true' || github.event_name == 'workflow_dispatch'
+    uses: ./.github/workflows/reusable-node-ci.yml
+    with:
+      test-matrix: ${{ needs.plan.outputs.matrix }}
+      cache: ${{ github.event_name != 'workflow_dispatch' || inputs.cache }}
+    secrets:
+      BUILD_SIGNING_KEY: ${{ secrets.BUILD_SIGNING_KEY }}
 
   deploy:
     name: Deploy to GitHub Pages
-    needs: [test, coverage]
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: [changes, ci]
+    # 선택적 배포: main 브랜치 push + 실제 코드 변경이 있을 때만
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main' && needs.changes.outputs.code == 'true'
     runs-on: ubuntu-latest
     permissions:
       pages: write
       id-token: write
-    # 배포는 중간에 취소되지 않도록 별도 그룹으로 직렬화
     concurrency:
       group: pages
       cancel-in-progress: false
@@ -126,3 +121,21 @@ jobs:
           path: dist/
       - id: deployment
         uses: actions/deploy-pages@v4
+
+  ci-result:
+    name: CI result
+    needs: [changes, ci, deploy]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Aggregate
+        env:
+          CODE: ${{ needs.changes.outputs.code }}
+          CI: ${{ needs.ci.result }}
+          DEPLOY: ${{ needs.deploy.result }}
+        run: |
+          echo "code changed: $CODE / ci: $CI / deploy: $DEPLOY" | tee -a "$GITHUB_STEP_SUMMARY"
+          for r in "$CI" "$DEPLOY"; do
+            if [ "$r" = "failure" ] || [ "$r" = "cancelled" ]; then exit 1; fi
+          done
+          [ "$CODE" = "true" ] || echo "문서만 변경 → build/test/deploy 생략 (정상)" >> "$GITHUB_STEP_SUMMARY"
