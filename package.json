@@ -18,13 +18,13 @@
     "test:coverage": "vitest run --coverage"
   },
   "devDependencies": {
-    "@eslint/js": "^9.39.5",
-    "@vitest/coverage-v8": "^2.1.9",
-    "eslint": "^9.39.5",
-    "globals": "^15.15.0",
-    "typescript": "^5.9.3",
+    "@eslint/js": "^10.0.1",
+    "@vitest/coverage-v8": "^5.1.0",
+    "eslint": "^10.14.0",
+    "globals": "^17.14.0",
+    "typescript": "^7.0.2",
     "typescript-eslint": "^8.72.2",
-    "vite": "^5.4.21",
-    "vitest": "^2.1.9"
+    "vite": "^8.3.7",
+    "vitest": "^5.1.0"
   }
 }
