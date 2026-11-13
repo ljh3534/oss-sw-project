@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 질문 / 아이디어 토론 (Discussions)
+    url: https://github.com/ljh3534/oss-sw-project/discussions
+    about: 사용법 질문이나 설계 토론(RFC)은 Discussions를 이용해 주세요.

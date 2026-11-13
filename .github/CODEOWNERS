@@ -1,0 +1,17 @@
+# CODEOWNERS — 경로별 기본 리뷰어 지정
+# 문법: <경로 패턴> <@사용자 또는 @org/team>
+# 뒤에 오는 규칙이 앞의 규칙을 덮어쓴다.
+
+# 기본: 모든 파일
+*                       @ljh3534
+
+# 계산 로직과 계수(설정 파일) — 단가 결과에 직접 영향
+/src/calculator*        @ljh3534
+/src/coefficients.json  @ljh3534
+
+# CI/CD 및 저장소 설정
+/.github/               @ljh3534
+
+# 문서
+/docs/                  @ljh3534
+*.md                    @ljh3534
