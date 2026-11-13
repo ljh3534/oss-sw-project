@@ -8,6 +8,12 @@ import { join, relative } from "node:path";
 const [mode = "sign", dir = "dist"] = process.argv.slice(2);
 const key = process.env.BUILD_SIGNING_KEY;
 if (!key) {
+  // 포크·Dependabot PR에는 GitHub가 저장소 Secret을 전달하지 않는다.
+  // 그런 PR(REQUIRE_SIGNATURE=false)에서는 서명을 건너뛰고, main 배포 경로에서는 반드시 실패시킨다.
+  if (process.env.REQUIRE_SIGNATURE === "false") {
+    console.warn("::warning::BUILD_SIGNING_KEY 없음 — 신뢰되지 않은 PR이므로 서명/검증을 건너뜁니다.");
+    process.exit(0);
+  }
   console.error("BUILD_SIGNING_KEY 환경변수가 없습니다. (GitHub Secrets에서 주입해야 함)");
   process.exit(1);
 }
