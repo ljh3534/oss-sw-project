@@ -34,7 +34,7 @@ def summarize(run_id):
             (ts(s["completed_at"]) - ts(s["started_at"])).total_seconds()
             for s in j["steps"]
             if s.get("started_at") and s.get("completed_at")
-            and ("npm ci" in s["name"] or "Setup project" in s["name"] or "setup-node" in s["name"])
+            and ("npm ci" in s["name"] or "setup-project" in s["name"] or "setup-node" in s["name"])
         )
         rows.append({"job": j["name"], "total": total, "install": install})
     return rows
