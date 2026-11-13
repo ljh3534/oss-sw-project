@@ -30,6 +30,8 @@ jobs:
             if (name === "issues") {
               const issue = context.payload.issue;
               await github.rest.issues.addLabels({ owner, repo, issue_number: issue.number, labels: ["needs-triage"] });
+              // 메인테이너가 작업 추적용으로 만든 이슈에는 안내 댓글을 생략 (노이즈 방지)
+              if (["OWNER", "MEMBER", "COLLABORATOR"].includes(issue.author_association)) return;
               await github.rest.issues.createComment({
                 owner, repo, issue_number: issue.number,
                 body: [

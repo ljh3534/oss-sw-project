@@ -29,7 +29,15 @@ jobs:
             const opened = onlyIssues.filter((i) => new Date(i.created_at) >= since);
             const closed = onlyIssues.filter((i) => i.closed_at && new Date(i.closed_at) >= since);
 
-            const prs = await github.paginate(github.rest.pulls.list, { owner, repo, state: "closed", sort: "updated", direction: "desc", per_page: 100 });
+            // 최근 수정 순으로 받다가 기간 밖 페이지가 나오면 중단 (API 호출 최소화)
+            const prs = await github.paginate(
+              github.rest.pulls.list,
+              { owner, repo, state: "closed", sort: "updated", direction: "desc", per_page: 100 },
+              (res, done) => {
+                if (res.data.some((p) => new Date(p.updated_at) < since)) done();
+                return res.data;
+              },
+            );
             const merged = prs.filter((p) => p.merged_at && new Date(p.merged_at) >= since);
             const leadHours = merged.map((p) => (new Date(p.merged_at) - new Date(p.created_at)) / 36e5).sort((a, b) => a - b);
             const median = leadHours.length ? leadHours[Math.floor(leadHours.length / 2)].toFixed(1) : "-";
