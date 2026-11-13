@@ -93,6 +93,8 @@ jobs:
     with:
       test-matrix: ${{ needs.plan.outputs.matrix }}
       cache: ${{ github.event_name != 'workflow_dispatch' || inputs.cache }}
+      # PR(포크·Dependabot 포함)에서는 Secret이 없을 수 있으므로 서명을 선택 사항으로, 배포되는 push는 필수로
+      require-signature: ${{ github.event_name != 'pull_request' }}
     secrets:
       BUILD_SIGNING_KEY: ${{ secrets.BUILD_SIGNING_KEY }}
 

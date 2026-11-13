@@ -16,9 +16,14 @@ on:
       run-coverage:
         type: boolean
         default: true
+      require-signature:
+        description: "Secret이 없으면 실패할지 여부 (main 배포 경로는 true)"
+        type: boolean
+        default: true
     secrets:
       BUILD_SIGNING_KEY:
-        required: true
+        # 포크·Dependabot PR에서는 비어 있을 수 있다
+        required: false
 
 permissions:
   contents: read
@@ -51,6 +56,7 @@ jobs:
         run: node scripts/sign-build.mjs sign dist
         env:
           BUILD_SIGNING_KEY: ${{ secrets.BUILD_SIGNING_KEY }}
+          REQUIRE_SIGNATURE: ${{ inputs.require-signature }}
       - uses: actions/upload-artifact@v4
         with:
           name: dist
@@ -81,6 +87,7 @@ jobs:
         run: node scripts/sign-build.mjs verify dist
         env:
           BUILD_SIGNING_KEY: ${{ secrets.BUILD_SIGNING_KEY }}
+          REQUIRE_SIGNATURE: ${{ inputs.require-signature }}
 
   coverage:
     name: Coverage report
