@@ -57,7 +57,7 @@ jobs:
         env:
           BUILD_SIGNING_KEY: ${{ secrets.BUILD_SIGNING_KEY }}
           REQUIRE_SIGNATURE: ${{ inputs.require-signature }}
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: dist
           path: dist/
@@ -100,7 +100,7 @@ jobs:
         with:
           cache: ${{ inputs.cache }}
       - run: npm run test:coverage
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: coverage
           path: coverage/
