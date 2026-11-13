@@ -1,0 +1,100 @@
+# 8주차: Reusable Workflow — Lint → Build → Test(Matrix) → Coverage 본체.
+# ci.yml(그리고 앞으로 생길 릴리스 워크플로)이 workflow_call로 호출한다.
+name: Reusable Node CI
+
+on:
+  workflow_call:
+    inputs:
+      test-matrix:
+        description: "테스트 매트릭스 JSON ({os:[], node:[], include:[], exclude:[]})"
+        type: string
+        required: true
+      cache:
+        description: "의존성 캐시 사용 여부"
+        type: boolean
+        default: true
+      run-coverage:
+        type: boolean
+        default: true
+    secrets:
+      BUILD_SIGNING_KEY:
+        required: true
+
+permissions:
+  contents: read
+
+jobs:
+  lint:
+    name: Lint & Typecheck
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: ./.github/actions/setup-project
+        with:
+          cache: ${{ inputs.cache }}
+      - run: npm run lint
+      - run: npm run typecheck
+
+  build:
+    name: Build
+    needs: lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: ./.github/actions/setup-project
+        with:
+          cache: ${{ inputs.cache }}
+      - run: npm run build
+        env:
+          VITE_BUILD_SHA: ${{ github.sha }}
+      - name: Sign build (Secret 주입)
+        run: node scripts/sign-build.mjs sign dist
+        env:
+          BUILD_SIGNING_KEY: ${{ secrets.BUILD_SIGNING_KEY }}
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/
+          retention-days: 7
+
+  test:
+    name: Test (${{ matrix.os }}, Node ${{ matrix.node }})
+    needs: build
+    runs-on: ${{ matrix.os }}
+    # include로 추가한 실험 조합(experimental: true)은 실패해도 전체를 막지 않는다
+    continue-on-error: ${{ matrix.experimental == true }}
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(inputs.test-matrix) }}
+    steps:
+      - uses: actions/checkout@v5
+      - uses: ./.github/actions/setup-project
+        with:
+          node-version: ${{ matrix.node }}
+          cache: ${{ inputs.cache }}
+      - run: npm test
+      - uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist/
+      - name: Verify build artifact signature
+        run: node scripts/sign-build.mjs verify dist
+        env:
+          BUILD_SIGNING_KEY: ${{ secrets.BUILD_SIGNING_KEY }}
+
+  coverage:
+    name: Coverage report
+    needs: build
+    if: inputs.run-coverage
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: ./.github/actions/setup-project
+        with:
+          cache: ${{ inputs.cache }}
+      - run: npm run test:coverage
+      - uses: actions/upload-artifact@v4
+        with:
+          name: coverage
+          path: coverage/
+          retention-days: 7
