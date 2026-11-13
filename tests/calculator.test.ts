@@ -6,6 +6,7 @@ import {
   getEngagementMultiplier,
   getEngagementRate,
   getFollowerTier,
+  parseOptionalNumber,
   type InfluencerInput,
 } from "../src/calculator";
 
@@ -111,5 +112,19 @@ describe("validateInput — PRD 8장 유효성 검사", () => {
 describe("formatKRW", () => {
   it("천 단위 구분 + 원", () => {
     expect(formatKRW(1_825_200)).toBe("1,825,200원");
+  });
+});
+
+describe("parseOptionalNumber — 빈 입력 처리", () => {
+  it("빈 문자열·공백·null은 undefined", () => {
+    expect(parseOptionalNumber("")).toBeUndefined();
+    expect(parseOptionalNumber("  ")).toBeUndefined();
+    expect(parseOptionalNumber(null)).toBeUndefined();
+  });
+  it("숫자 문자열은 number", () => {
+    expect(parseOptionalNumber("1400")).toBe(1400);
+  });
+  it("좋아요 칸을 비우면 0%로 계산되지 않고 에러", () => {
+    expect(() => calculatePrice({ ...base, avgLikes: parseOptionalNumber("") })).toThrow(ValidationError);
   });
 });

@@ -101,7 +101,7 @@ export function getEngagementMultiplier(rate: number): number {
   for (const band of coefficients.engagement) {
     if (band.below === null || rate < band.below) return band.multiplier;
   }
-  /* c8 ignore next */
+  /* v8 ignore next */
   throw new Error("engagement 구간 설정이 잘못되었습니다.");
 }
 
@@ -149,6 +149,12 @@ export function calculatePrice(input: InfluencerInput): CalculationResult {
     maxPrice: Math.round(amount * coefficients.range.max),
     breakdown,
   };
+}
+
+/** 폼 입력값 변환: 빈 칸은 0이 아니라 "미입력(undefined)"으로 취급한다. */
+export function parseOptionalNumber(raw: FormDataEntryValue | null): number | undefined {
+  if (raw === null || typeof raw !== "string" || raw.trim() === "") return undefined;
+  return Number(raw);
 }
 
 export function formatKRW(value: number): string {

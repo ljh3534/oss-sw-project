@@ -1,6 +1,6 @@
 import "./style.css";
 import coefficients from "./coefficients.json";
-import { ValidationError, calculatePrice, formatKRW, type InfluencerInput } from "./calculator";
+import { ValidationError, calculatePrice, formatKRW, parseOptionalNumber, type InfluencerInput } from "./calculator";
 
 const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
 
@@ -21,9 +21,9 @@ $<HTMLFormElement>("calc-form").addEventListener("submit", (event) => {
   const data = new FormData(event.currentTarget as HTMLFormElement);
   const input: InfluencerInput = {
     platform: data.get("platform") as InfluencerInput["platform"],
-    followerCount: Number(data.get("followerCount")),
-    avgLikes: Number(data.get("avgLikes")),
-    avgComments: Number(data.get("avgComments")),
+    followerCount: parseOptionalNumber(data.get("followerCount")) ?? Number.NaN,
+    avgLikes: parseOptionalNumber(data.get("avgLikes")),
+    avgComments: parseOptionalNumber(data.get("avgComments")),
     category: data.get("category") as InfluencerInput["category"],
     contentType: data.get("contentType") as InfluencerInput["contentType"],
   };
