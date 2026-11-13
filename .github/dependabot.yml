@@ -1,0 +1,25 @@
+# 설치 단계에서 뺀 npm audit(ADR-0005)을 대체: 취약·구버전 의존성과 액션을 주 1회 점검해 PR로 올린다.
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      time: "09:00"
+      timezone: Asia/Seoul
+    groups:
+      dev-dependencies:
+        dependency-type: development
+    commit-message:
+      prefix: build
+      include: scope
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      time: "09:00"
+      timezone: Asia/Seoul
+    commit-message:
+      prefix: ci
