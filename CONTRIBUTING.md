@@ -103,7 +103,10 @@ PR은 작게 유지하세요 — 변경 라인 400줄 이하를 권장합니다.
 ## 6. 의사결정 기록
 
 설계상 중요한 결정(라이브러리 선택, 계산 공식 변경 등)은 [`docs/adr/`](docs/adr/)에 ADR로 남깁니다.
+절차와 템플릿은 [docs/adr/README.md](docs/adr/README.md)를 참고하세요.
 큰 변경은 먼저 [Discussions의 RFC 카테고리](https://github.com/ljh3534/oss-sw-project/discussions)에서 토론합니다.
+
+비동기 협업 채널(Issues·Discussions·Wiki·ADR)의 역할 분담은 [docs/collaboration/async-collaboration.md](docs/collaboration/async-collaboration.md)에 정리되어 있습니다.
 
 ## 7. 라이선스
 
