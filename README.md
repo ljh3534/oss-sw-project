@@ -1,5 +1,6 @@
 # AdPrice — 인플루언서 광고 단가 계산기
 
+[![CI](https://github.com/ljh3534/oss-sw-project/actions/workflows/ci.yml/badge.svg)](https://github.com/ljh3534/oss-sw-project/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Contributor Covenant](https://img.shields.io/badge/Contributor%20Covenant-2.1-4baaaa.svg)](CODE_OF_CONDUCT.md)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)

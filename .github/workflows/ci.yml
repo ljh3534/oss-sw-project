@@ -1,0 +1,128 @@
+# 7주차: GitHub Actions 기본 CI/CD
+#  lint ─┐
+#        ├─> build (아티팩트 업로드, Secret으로 서명)
+#        │      └─> test (Matrix: OS 3 × Node 3, 아티팩트 다운로드 후 서명 검증)
+#        │              └─> deploy (main push 때만, GitHub Pages)
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+# 최소 권한 원칙: 기본은 읽기 전용, deploy 잡에서만 필요한 권한을 추가
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lint:
+    name: Lint & Typecheck
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run typecheck
+
+  build:
+    name: Build
+    needs: lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+      - run: npm ci
+      - name: Build
+        run: npm run build
+        env:
+          VITE_BUILD_SHA: ${{ github.sha }}
+      - name: Sign build (Secret 주입)
+        run: node scripts/sign-build.mjs sign dist
+        env:
+          # Secret은 env로만 주입한다. run 스크립트에 ${{ secrets.* }}를 직접 쓰지 않는다.
+          BUILD_SIGNING_KEY: ${{ secrets.BUILD_SIGNING_KEY }}
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/
+          retention-days: 7
+
+  test:
+    name: Test (${{ matrix.os }}, Node ${{ matrix.node }})
+    needs: build
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        node: [20, 22, 24]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+      - run: npm ci
+      - name: Unit tests
+        run: npm test
+      - uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist/
+      - name: Verify build artifact signature
+        run: node scripts/sign-build.mjs verify dist
+        env:
+          BUILD_SIGNING_KEY: ${{ secrets.BUILD_SIGNING_KEY }}
+
+  coverage:
+    name: Coverage report
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+      - run: npm ci
+      - run: npm run test:coverage
+      - uses: actions/upload-artifact@v4
+        with:
+          name: coverage
+          path: coverage/
+          retention-days: 7
+
+  deploy:
+    name: Deploy to GitHub Pages
+    needs: [test, coverage]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    # 배포는 중간에 취소되지 않도록 별도 그룹으로 직렬화
+    concurrency:
+      group: pages
+      cancel-in-progress: false
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist/
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist/
+      - id: deployment
+        uses: actions/deploy-pages@v4
