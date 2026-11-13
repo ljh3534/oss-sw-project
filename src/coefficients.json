@@ -1,0 +1,38 @@
+{
+  "version": "v1-estimate",
+  "followerTiers": [
+    { "id": "nano", "label": "나노", "min": 1000, "ratePer1000": 8000 },
+    { "id": "micro", "label": "마이크로", "min": 10000, "ratePer1000": 12000 },
+    { "id": "mid", "label": "미드", "min": 50000, "ratePer1000": 18000 },
+    { "id": "macro", "label": "매크로", "min": 200000, "ratePer1000": 25000 },
+    { "id": "mega", "label": "메가", "min": 1000000, "ratePer1000": 35000 }
+  ],
+  "engagement": [
+    { "below": 1, "multiplier": 0.8 },
+    { "below": 3, "multiplier": 1.0 },
+    { "below": 6, "multiplier": 1.3 },
+    { "below": null, "multiplier": 1.6 }
+  ],
+  "category": {
+    "beauty": { "label": "뷰티/패션", "multiplier": 1.2 },
+    "game": { "label": "게임", "multiplier": 1.0 },
+    "food": { "label": "음식/여행", "multiplier": 1.1 },
+    "life": { "label": "육아/라이프", "multiplier": 0.9 },
+    "tech": { "label": "테크/IT", "multiplier": 1.15 },
+    "etc": { "label": "기타", "multiplier": 1.0 }
+  },
+  "contentType": {
+    "feed": { "label": "피드 게시물", "multiplier": 1.0 },
+    "reels": { "label": "릴스/쇼츠", "multiplier": 1.3 },
+    "story": { "label": "스토리", "multiplier": 0.5 },
+    "video": { "label": "유튜브 영상", "multiplier": 2.0 },
+    "live": { "label": "라이브 커머스", "multiplier": 1.8 }
+  },
+  "platform": {
+    "instagram": { "label": "인스타그램", "multiplier": 1.0 },
+    "youtube": { "label": "유튜브", "multiplier": 1.4 },
+    "tiktok": { "label": "틱톡", "multiplier": 0.9 },
+    "blog": { "label": "블로그", "multiplier": 0.7 }
+  },
+  "range": { "min": 0.85, "max": 1.15 }
+}
