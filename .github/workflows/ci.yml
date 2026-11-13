@@ -109,6 +109,10 @@ jobs:
     permissions:
       pages: write
       id-token: write
+    # 배포는 중간에 취소되지 않도록 별도 그룹으로 직렬화
+    concurrency:
+      group: pages
+      cancel-in-progress: false
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
