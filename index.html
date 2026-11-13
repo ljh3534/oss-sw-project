@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AdPrice — 인플루언서 광고 단가 계산기</title>
+  </head>
+  <body>
+    <main class="container">
+      <h1>AdPrice</h1>
+      <p class="subtitle">인플루언서 광고 단가 계산기 · <strong>참고용 추정치</strong></p>
+      <form id="calc-form" novalidate>
+        <label>플랫폼 <select name="platform" id="platform"></select></label>
+        <label>팔로워 수 <input name="followerCount" type="number" min="1000" value="50000" required /></label>
+        <label>평균 좋아요 <input name="avgLikes" type="number" min="0" value="1400" required /></label>
+        <label>평균 댓글 <input name="avgComments" type="number" min="0" value="100" required /></label>
+        <label>카테고리 <select name="category" id="category"></select></label>
+        <label>콘텐츠 유형 <select name="contentType" id="contentType"></select></label>
+        <button type="submit">계산하기</button>
+      </form>
+      <p id="error" role="alert" class="error" hidden></p>
+      <section id="result" hidden aria-live="polite">
+        <h2>예상 단가</h2>
+        <p class="range"><span id="min"></span> ~ <span id="max"></span></p>
+        <h3>계산 근거</h3>
+        <table>
+          <thead><tr><th>단계</th><th>계수</th><th>금액</th></tr></thead>
+          <tbody id="breakdown"></tbody>
+        </table>
+      </section>
+      <footer>Build <code id="build-info"></code> · <a href="https://github.com/ljh3534/oss-sw-project">GitHub</a></footer>
+    </main>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
