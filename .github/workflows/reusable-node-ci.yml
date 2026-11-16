@@ -33,7 +33,7 @@ jobs:
     name: Lint & Typecheck
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
       - uses: ./.github/actions/setup-project
         with:
           cache: ${{ inputs.cache }}
@@ -45,7 +45,7 @@ jobs:
     needs: lint
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
       - uses: ./.github/actions/setup-project
         with:
           cache: ${{ inputs.cache }}
@@ -73,7 +73,7 @@ jobs:
       fail-fast: false
       matrix: ${{ fromJSON(inputs.test-matrix) }}
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
       - uses: ./.github/actions/setup-project
         with:
           node-version: ${{ matrix.node }}
@@ -95,7 +95,7 @@ jobs:
     if: inputs.run-coverage
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
       - uses: ./.github/actions/setup-project
         with:
           cache: ${{ inputs.cache }}
